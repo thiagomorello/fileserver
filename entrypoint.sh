@@ -2,6 +2,18 @@
 
 set -e
 
+# Função para esperar o OwnCloud estar pronto (verificando se o config.php existe)
+function wait_for_owncloud {
+  while [ ! -f "/var/www/html/config/config.php" ]; do
+    echo "Aguardando o OwnCloud inicializar..."
+    sleep 5
+  done
+  echo "OwnCloud inicializado. Prosseguindo com a modificação do config.php."
+}
+
+# Espera até que o OwnCloud tenha inicializado
+wait_for_owncloud
+
 # Caminho do arquivo config.php dentro do container
 CONFIG_FILE="/var/www/html/config/config.php"
 
@@ -34,5 +46,5 @@ else
     exit 1
 fi
 
-# Executa o comando original do container
+# Executa o comando original do container (apache2 ou php-fpm)
 exec "$@"
