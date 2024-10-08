@@ -1,0 +1,69 @@
+services:
+  owncloud:
+    build:
+      context: . # Este diretório contém o Dockerfile e o entrypoint.sh
+    container_name: owncloud
+    environment:
+      OWNCLOUD_DOMAIN: yourdomain.com
+      OWNCLOUD_ADMIN_USERNAME: admin
+      OWNCLOUD_ADMIN_PASSWORD: adminpassword
+      OWNCLOUD_MYSQL_HOST: mysql
+      OWNCLOUD_MYSQL_USER: owncloud
+      OWNCLOUD_MYSQL_PASSWORD: owncloudpassword
+      OWNCLOUD_MYSQL_DATABASE: owncloud
+      OWNCLOUD_REDIS_HOST: redis
+      OWNCLOUD_REDIS_PORT: 6399
+      OWNCLOUD_REDIS_PASSWORD: redispassword
+      OWNCLOUD_S3_HOSTNAME: nyc3.digitaloceanspaces.com
+      OWNCLOUD_S3_PORT: 443
+      OWNCLOUD_S3_BUCKET: wedrop-fileserver
+      OWNCLOUD_S3_ACCESS_KEY: DO00EUJMQVCAQMACV6VY
+      OWNCLOUD_S3_SECRET_KEY: c5zNx6rFPVx18fTg8SriutNpbYLFv1qUgaKWNWT3Tfo
+      OWNCLOUD_S3_REGION: nyc3
+      OWNCLOUD_S3_SSL: "true"
+    ports:
+      - 8090:8080 # Porta do OwnCloud ajustada para 8090 externamente
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - owncloud-files:/mnt/data
+    networks:
+      - owncloud-network
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: owncloud
+      MYSQL_USER: owncloud
+      MYSQL_PASSWORD: owncloudpassword
+    ports:
+      - 3406:3306 # Porta do MySQL ajustada para 3406 externamente
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - owncloud-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    environment:
+      REDIS_PASSWORD: redispassword
+    command: ["redis-server", "--requirepass", "redispassword"]
+    ports:
+      - 6399:6379 # Porta do Redis ajustada para 6399 externamente
+    volumes:
+      - redis-data:/data
+    networks:
+      - owncloud-network
+
+volumes:
+  owncloud-files:
+  mysql-data:
+  redis-data:
+
+networks:
+  owncloud-network:
+    driver: bridge
